@@ -12,7 +12,7 @@ except:
     shell(['apt','install','python3-pip','-y'])
     shell(['pip','install','aiohttp[speedups]'])
     from aiohttp import ClientSession,ClientTimeout
-from asyncio import run,Queue,QueueEmpty,wait
+import asyncio
 with open(domains,encoding='UTF-8')as file:
     domains=file.read().splitlines()
 header='''Sec-Ch-Ua: "Chromium";v="95", ";Not A Brand";v="99"
@@ -36,12 +36,12 @@ async def main():
     timeout = ClientTimeout(total=10)
     async with ClientSession(headers=headers,timeout=timeout)as client:
         print(headers)
-        await wait([http(client) for _ in range(coroutine)])
+        await asyncio.wait([http(client) for _ in range(coroutine)])
 async def http(client):
     while True:
         try:
             info=queue.get_nowait()
-        except QueueEmpty:
+        except asyncio.QueueEmpty:
             return
         print(info[0],info[1]+path)
         try:
@@ -53,7 +53,7 @@ def exits():
     with open('result.txt','w')as file:
         file.writelines(result)
 result=[]
-queue=Queue()
+queue=asyncio.Queue()
 for index in range(len(domains)):
     queue.put_nowait((index,domains[index]))
-run(main())
+asyncio.run(main())
